@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | TaskFlow{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Key Metrics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Total Tasks -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Tasks</p>
+                    <h3 class="text-3xl font-bold text-slate-800" id="statTotal">{{ stats.total_tasks }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm">
+                    <i class="bi bi-stack"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-xs text-slate-500">
+                <span class="text-indigo-600 font-semibold mr-1.5 flex items-center">
+                    <i class="bi bi-folder2-open mr-1"></i> Managed
+                </span>
+                <span>in local workspace</span>
+            </div>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Completed</p>
+                    <h3 class="text-3xl font-bold text-slate-800" id="statCompleted">{{ stats.completed_tasks }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-sm">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex justify-between text-xs text-slate-500 mb-1">
+                    <span>Completion Rate</span>
+                    <span class="font-bold text-slate-700" id="statRateText">{{ stats.completion_rate }}%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div id="statProgressBar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: {{ stats.completion_rate }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Progress -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">In Progress</p>
+                    <h3 class="text-3xl font-bold text-slate-800" id="statInProgress">{{ stats.in_progress_tasks }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-sm">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-xs text-slate-500">
+                <span class="text-blue-600 font-semibold mr-1.5">Active</span>
+                <span>Work currently underway</span>
+            </div>
+        </div>
+
+        <!-- Overdue & Pending -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Overdue / Pending</p>
+                    <div class="flex items-baseline space-x-2">
+                        <h3 class="text-3xl font-bold text-slate-800" id="statPending">{{ stats.pending_tasks }}</h3>
+                        {% if stats.overdue_tasks > 0 %}
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 flex items-center">
+                            <i class="bi bi-exclamation-triangle-fill mr-1 text-[10px]"></i>
+                            {{ stats.overdue_tasks }} overdue
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-sm">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-xs text-slate-500">
+                <span class="text-amber-600 font-semibold mr-1.5">Attention</span>
+                <span>Awaiting execution</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts & Visual Analytics Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Status Distribution Chart -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="font-bold text-slate-800 text-base flex items-center">
+                    <i class="bi bi-pie-chart text-indigo-600 mr-2"></i> Status Distribution
+                </h4>
+                <span class="text-xs text-slate-400">Live breakdown</span>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Priority Breakdown Chart -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="font-bold text-slate-800 text-base flex items-center">
+                    <i class="bi bi-bar-chart text-indigo-600 mr-2"></i> Tasks by Priority
+                </h4>
+                <span class="text-xs text-slate-400">Severity analysis</span>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Task Lists: Upcoming Deadlines & Recent Tasks -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Upcoming Deadlines -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <h4 class="font-bold text-slate-800 text-base flex items-center mb-0">
+                    <i class="bi bi-calendar-event text-indigo-600 mr-2"></i> Upcoming Deadlines
+                </h4>
+                <a href="{{ url_for('tasks_page') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 no-underline">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="divide-y divide-slate-100" id="upcomingList">
+                {% if upcoming_tasks %}
+                    {% for task in upcoming_tasks %}
+                    <div class="p-4 hover:bg-slate-50/80 transition flex items-center justify-between">
+                        <div class="min-w-0 flex-1 mr-4">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h5 class="text-sm font-semibold text-slate-800 truncate mb-0">{{ task.title }}</h5>
+                                <span class="badge-priority badge-{{ task.priority.lower() }}">{{ task.priority }}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-0 flex items-center">
+                                <i class="bi bi-calendar3 mr-1.5 text-slate-400"></i>
+                                {% if task.is_overdue %}
+                                    <span class="text-rose-600 font-semibold flex items-center">
+                                        <i class="bi bi-exclamation-circle-fill mr-1"></i> Overdue ({{ task.due_date.strftime('%b %d, %Y') }})
+                                    </span>
+                                {% else %}
+                                    <span>Due {{ task.due_date.strftime('%b %d, %Y') }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button onclick="quickUpdateStatus({{ task.id }}, 'Completed')" title="Mark as Completed" 
+                                    class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button onclick="openEditTaskModal({{ task.id }})" title="Edit Task"
+                                    class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-8 text-center text-slate-400 text-sm">
+                        <i class="bi bi-check2-circle text-3xl text-emerald-500 mb-2 block"></i>
+                        No pending deadlines right now!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Activity / Tasks -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <h4 class="font-bold text-slate-800 text-base flex items-center mb-0">
+                    <i class="bi bi-clock-history text-indigo-600 mr-2"></i> Recent Tasks
+                </h4>
+                <button onclick="openCreateTaskModal()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center">
+                    <i class="bi bi-plus-circle mr-1"></i> Add Task
+                </button>
+            </div>
+
+            <div class="divide-y divide-slate-100" id="recentList">
+                {% if recent_tasks %}
+                    {% for task in recent_tasks %}
+                    <div class="p-4 hover:bg-slate-50/80 transition flex items-center justify-between">
+                        <div class="min-w-0 flex-1 mr-4">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h5 class="text-sm font-semibold text-slate-800 truncate mb-0">{{ task.title }}</h5>
+                                <span class="badge-status badge-status-{{ task.status.lower().replace(' ', '-') }}">{{ task.status }}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-0">
+                                Created on {{ task.created_at.strftime('%b %d, %Y') }}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openEditTaskModal({{ task.id }})" title="Edit"
+                                    class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                                <i class="bi bi-pencil text-xs"></i>
+                            </button>
+                            <button onclick="confirmDeleteTask({{ task.id }}, '{{ task.title | escape }}')" title="Delete"
+                                    class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition">
+                                <i class="bi bi-trash3 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-8 text-center text-slate-400 text-sm">
+                        <p>No tasks created yet.</p>
+                        <button onclick="openCreateTaskModal()" class="btn btn-sm btn-primary mt-2">Create First Task</button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    // Initialize Dashboard Charts with server-side rendered stats
+    document.addEventListener('DOMContentLoaded', function() {
+        const statsData = {{ stats | tojson }};
+        initDashboardCharts(statsData);
+    });
+</script>
+{% endblock %}
